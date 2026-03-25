@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kiosk - Moda B2B</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Icons (Phosphor) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- QR Code -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  
+  <!-- Local CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Global Background Video -->
+    <video class="global-bg-video" autoplay muted loop playsinline>
+      <source src="public/bg-welcome.mp4" type="video/mp4">
+    </video>
+
+    <!-- Theme Toggle (Hidden by default, requires 10 sequence clicks to reveal) -->
+    <button class="btn-theme-toggle hidden" onclick="app.toggleTheme()"><i class="ph ph-sun"></i></button>
+
+    <!-- TELA 1: Apresentação -->
+    <div id="screen-1" class="screen active flex-col-center">
+      
+      <img src="public/Logo2White.png" alt="Vizzu Logo" class="brand-logo" id="main-logo" onclick="event.stopPropagation()">
+      <p class="s1-greeting">seja bem-vindo(a) ao</p>
+      <h1 class="s1-title text-center">Vizzu Totem<br>Experience</h1>
+
+      <button class="btn-primary mt-auto pulse" onclick="app.goToScreen(2)">
+        Toque para Iniciar <i class="ph ph-hand-tap"></i>
+      </button>
+      <p class="powered-by">powered by vizzu</p>
+    </div>
+
+    <!-- TELA 2: Captação de Dados -->
+    <div id="screen-2" class="screen flex-col">
+      <header class="header">
+        <button class="btn-icon" onclick="app.goToScreen(1)"><i class="ph ph-arrow-left"></i></button>
+      </header>
+      <div class="content flex-col-center">
+        <h2 class="s2-title">IDENTIFICAÇÃO</h2>
+        <p class="desc">Preencha seus dados para acessar o catálogo interativo.</p>
+        <form id="form-capture" class="form-group" onsubmit="app.handleCaptureSubmit(event)">
+          <div class="input-wrap">
+            <i class="ph ph-buildings"></i>
+            <input type="text" id="inp-empresa" placeholder="Nome da empresa" required readonly onclick="app.focusInput(this)">
+          </div>
+          <div class="input-wrap">
+            <i class="ph ph-user"></i>
+            <input type="text" id="inp-nome" placeholder="Nome do responsável" required readonly onclick="app.focusInput(this)">
+          </div>
+          <div class="input-wrap">
+            <i class="ph ph-whatsapp-logo"></i>
+            <input type="tel" id="inp-whatsapp" placeholder="WhatsApp" required readonly onclick="app.focusInput(this)">
+          </div>
+          <div class="input-wrap">
+            <i class="ph ph-globe"></i>
+            <input type="text" id="inp-site" placeholder="Site da marca" required readonly onclick="app.focusInput(this)">
+          </div>
+          <button type="submit" class="btn-primary mt-large">Continuar <i class="ph ph-arrow-right"></i></button>
+        </form>
+      </div>
+    </div>
+
+    <!-- TELA 3: Validação WhatsApp -->
+    <div id="screen-3" class="screen flex-col">
+      <header class="header">
+        <button class="btn-icon" onclick="app.goToScreen(2)"><i class="ph ph-arrow-left"></i></button>
+        <h2>Confirme seu acesso</h2>
+      </header>
+      <div class="content flex-col-center">
+        <i class="ph ph-whatsapp-logo icon-huge text-gradient"></i>
+        <h3 class="mt-large">Código enviado!</h3>
+        <p class="desc text-center">Enviamos um código de 4 dígitos para o WhatsApp <br><strong id="display-whatsapp"></strong></p>
+        
+        <div class="pin-group mt-large">
+          <input type="text" class="pin-input" maxlength="1" readonly onclick="app.focusInput(this, true)">
+          <input type="text" class="pin-input" maxlength="1" readonly onclick="app.focusInput(this, true)">
+          <input type="text" class="pin-input" maxlength="1" readonly onclick="app.focusInput(this, true)">
+          <input type="text" class="pin-input" maxlength="1" readonly onclick="app.focusInput(this, true)">
+        </div>
+        
+        <p id="pin-error" class="error-text hidden">Código inválido. Tente novamente.</p>
+        <p class="desc mt-large text-center">Tentativas restantes: <strong id="attempt-count">3</strong></p>
+        
+        <button class="btn-primary mt-large" onclick="app.validatePin()">Validar <i class="ph ph-check-circle"></i></button>
+      </div>
+    </div>
+
+    <!-- TELA 4: Seleção de Gênero -->
+    <div id="screen-4" class="screen flex-col">
+      <header class="header">
+        <button class="btn-icon" onclick="app.goToScreen(1)"><i class="ph ph-arrow-left"></i></button>
+      </header>
+      <div class="content flex-col-center" style="flex: 1;">
+        <h2 class="text-center">O que você deseja explorar?</h2>
+        <p class="desc text-center" style="margin-bottom: 48px;">Selecione o catálogo para visualizar as peças disponíveis.</p>
+        <div class="row-center gap-large" style="width: 100%;">
+        <div class="gender-card" onclick="app.selectGender('Feminino')">
+          <div class="gender-overlay"></div>
+          <div class="gender-img feminine-bg"></div>
+          <div class="gender-content">
+            <h3>Moda Feminina</h3>
+            <p>Visualizar tops, calças, vestidos e mais</p>
+          </div>
+        </div>
+        <div class="gender-card" onclick="app.selectGender('Masculino')">
+          <div class="gender-overlay"></div>
+          <div class="gender-img masculine-bg"></div>
+          <div class="gender-content">
+            <h3>Moda Masculina</h3>
+            <p>Visualizar jaquetas, calças, t-shirts e mais</p>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 6: Compositor de Look -->
+    <div id="screen-6" class="screen flex-col">
+      <header class="header absolute-top glass">
+        <button class="btn-icon" onclick="app.goToScreen(4)"><i class="ph ph-arrow-left"></i></button>
+        <h2>Monte seu Look</h2>
+        <button class="btn-primary ml-auto btn-sm" id="btn-finish-look" onclick="app.goToScreen(7)" disabled>Finalizar <i class="ph ph-check"></i></button>
+      </header>
+      <div class="composer-container">
+        <!-- Model Photo Viewer -->
+        <img id="composer-model-img" class="composer-model-img" src="public/Modelo Feminino/vizzu-1774116725426.png" alt="Modelo">
+        <!-- Overlay UI -->
+        <div class="composer-overlay">
+          <div class="node-group top-node">
+            <button class="node-btn" onclick="app.openPartModal('top')"><i class="ph ph-plus"></i></button>
+            <div class="node-hint"><i class="ph ph-arrow-bend-left-up node-arrow"></i><span>Adicionar peça</span></div>
+          </div>
+          <div class="node-group bottom-node">
+            <button class="node-btn" onclick="app.openPartModal('bottom')"><i class="ph ph-plus"></i></button>
+            <div class="node-hint"><i class="ph ph-arrow-bend-left-up node-arrow"></i><span>Adicionar peça</span></div>
+          </div>
+        </div>
+        <!-- View Toggle Arrow -->
+        <button class="btn-view-toggle" id="btn-view-toggle" onclick="app.toggleModelView()">
+          <i class="ph ph-arrow-u-down-right"></i>
+          <span id="view-toggle-label">Ver costas</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TELA 7: Finalização -->
+    <div id="screen-7" class="screen flex-col-center">
+      <div class="success-circle"><i class="ph ph-check"></i></div>
+      <h2 class="mt-large text-gradient">Look Finalizado!</h2>
+      <p class="desc text-center">Sua seleção foi registrada com sucesso.</p>
+      
+      <div class="look-summary glass-panel mt-large">
+        <h4 id="summary-top" class="summary-item">Nenhum Top</h4>
+        <div class="summary-divider"></div>
+        <h4 id="summary-bottom" class="summary-item">Nenhum Bottom</h4>
+      </div>
+
+      <div class="surprise-banner mt-huge glass-panel text-center">
+        <h3>Quer uma surpresa?</h3>
+        <p class="desc">Podemos enviar um brinde ou voucher no seu WhatsApp!</p>
+        <div class="row-center gap-md mt-large">
+          <button class="btn-outline" onclick="app.finishSession(false)">Não, obrigado</button>
+          <button class="btn-primary" onclick="app.finishSession(true)">Sim, eu quero! <i class="ph ph-gift"></i></button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- TELA 8: QR Code Surpresa -->
+    <div id="screen-8" class="screen flex-col-center">
+      <div class="qr-card glass-panel text-center">
+        <i class="ph ph-gift icon-huge text-gradient"></i>
+        <h2 class="mt-large">Escaneie e ganhe!</h2>
+        <p class="desc">Aponte a câmera do celular para o QR Code abaixo e receba sua surpresa no WhatsApp.</p>
+        <div id="qr-container" class="mt-large"></div>
+        <p class="desc mt-large" style="font-size:20px; opacity:0.6;">Ou envie "OI" para (44) 99760-7545</p>
+      </div>
+      <button class="btn-outline mt-large" onclick="app.finishFromQR()">Encerrar</button>
+    </div>
+
+    <!-- TELA 9 (Detalhes Isolados do Produto) -->
+    <div id="screen-detail" class="screen flex-col">
+      <header class="header">
+        <button class="btn-icon" onclick="app.goBackFromDetail()"><i class="ph ph-arrow-left"></i></button>
+        <h2>Detalhes da Peça</h2>
+      </header>
+      <div class="detail-layout">
+        <div class="window-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div>
+        <div class="detail-video-wrapper">
+          <video id="detail-video" muted playsinline preload="auto"></video>
+          <div class="detail-scrub-hint"><p><i class="ph ph-arrows-out-line-horizontal"></i> Arraste para girar o produto</p></div>
+        </div>
+        <div class="detail-specs" id="detail-specs-content">
+          <!-- Populated by JS -->
+        </div>
+        <div class="row gap-large detail-actions">
+          <button class="btn-outline w-full justify-center" onclick="app.goBackFromDetail()">Voltar</button>
+          <button class="btn-primary w-full justify-center" onclick="app.applyComponentFromDetail()"><i class="ph ph-check"></i> Aplicar no Modelo</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- VIRTUAL KEYBOARD -->
+    <div id="virtual-keyboard" class="vk-container hidden">
+      <div class="vk-header">
+        <button class="btn-vk-close" onclick="app.closeKeyboard()"><i class="ph ph-caret-down"></i></button>
+      </div>
+      <div id="vk-keys" class="vk-keys"></div>
+    </div>
+
+    <!-- Countdown Overlay -->
+    <div id="countdown-overlay" class="countdown-overlay hidden">
+      <div class="countdown-content">
+        <p>Sessão expirando em</p>
+        <span id="countdown-number">10</span>
+        <p class="countdown-hint">Toque na tela para continuar</p>
+      </div>
+    </div>
+
+  </div> <!-- /#app -->
+
+  <!-- MODALS -->
+  <!-- Product Details Modal (TELA 5) -->
+  <div id="modal-product" class="modal-backdrop hidden">
+    <div class="modal glass-panel">
+      <button class="btn-close" onclick="app.closeModal('modal-product')"><i class="ph ph-x"></i></button>
+      <div class="modal-body row" id="modal-product-content">
+        <!-- Insert via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Selection Modal (TELA 6) -->
+  <div id="modal-select" class="modal-backdrop hidden">
+    <div class="modal modal-bottom glass-panel">
+      <button class="btn-close" onclick="app.closeModal('modal-select')"><i class="ph ph-x"></i></button>
+      <h3 id="modal-select-title">Selecione</h3>
+      <div class="catalog-grid horizontal-scroll mt-large" id="modal-select-grid">
+         <!-- Insert via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Grain Overlay -->
+  <svg class="grain-overlay" aria-hidden="true">
+    <filter id="grain-filter"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/></filter>
+    <rect width="100%" height="100%" filter="url(#grain-filter)"/>
+  </svg>
+
+  <!-- Config & App JS -->
+  <script src="app.js"></script>
+</body>
+</html>
